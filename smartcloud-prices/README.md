@@ -48,8 +48,7 @@ Please push your code to a public repository and submit the link via email. Plea
 3. But also, This API server must have fast response
 4. Multiple user use this application at the same time.
 5. This API server is not updated often
-6. This API server is working on machine, not local
-7. The list of instances will be updated
+6. The list of instances will be updated
    - It is possible for application to send the wrong instance name to API server even if we have assumption #1
 
 # Any design decisions you make
@@ -65,12 +64,7 @@ Please push your code to a public repository and submit the link via email. Plea
      2. After we call API, saving the price information in cache will be executed asynchronously
 
 # Instruction on how to run your code in local
-1. Set the environment variable for token
-```dtd
-$ export SMARTCLOUD_API_TOKEN=lxwmuKofnxMxz6O2QE1Ogh
-```
-
-2. Run server
+1. Run server
 ```dtd
 $ sbt run
 ```
