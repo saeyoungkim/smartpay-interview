@@ -14,5 +14,4 @@ object InstanceKindResponse {
           "kind" -> k.map(_.getString).asJson
         )
     }
-
 }

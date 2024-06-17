@@ -6,8 +6,8 @@ import io.circe.parser.decode
 import org.http4s.ember.client.EmberClientBuilder
 import prices.data._
 import cats.effect.unsafe.IORuntime
-import prices.data.builder.InstancesRequestBuilder
-import prices.routes.protocol.InstancesResponse
+import org.http4s.circe.jsonOf
+import prices.data.builder.{InstancePriceRequestBuilder, InstancesRequestBuilder}
 
 object SmartcloudInstanceKindService {
 
@@ -41,7 +41,13 @@ object SmartcloudInstanceKindService {
           .unsafeRunSync()
           .pure[F]
 
-    override def get(kind: InstanceKind): F[InstancePrice] = ???
+    override def get(kind: InstanceKind): F[InstancePrice] =
+      client
+        .use { client =>
+          client.expect[InstancePrice](InstancePriceRequestBuilder.build(config, kind))(jsonOf[IO, InstancePrice])
+        }
+        .unsafeRunSync()
+        .pure[F]
   }
 
 }
