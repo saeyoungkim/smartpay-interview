@@ -13,11 +13,11 @@ final case class InstanceKindRoutes[F[_]: Sync](instanceKindService: InstanceKin
 
   val prefix = "/instance-kinds"
 
-  implicit val instanceKindResponseEncoder = jsonEncoderOf[F, List[InstanceKindResponse]]
+  implicit val instanceKindResponseEncoder = jsonEncoderOf[F, InstanceKindResponse]
 
   private val get: HttpRoutes[F] = HttpRoutes.of {
     case GET -> Root =>
-      instanceKindService.getAll().flatMap(kinds => Ok(kinds.map(k => InstanceKindResponse(k))))
+      instanceKindService.getAll().flatMap(kinds => Ok(InstanceKindResponse(kinds)))
     case GET -> Root / kind / "price" =>
       ???
   }

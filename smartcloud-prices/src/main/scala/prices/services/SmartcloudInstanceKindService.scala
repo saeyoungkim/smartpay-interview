@@ -2,10 +2,12 @@ package prices.services
 
 import cats.implicits._
 import cats.effect._
-import org.http4s._
-import org.http4s.circe._
-
+import io.circe.parser.decode
+import org.http4s.ember.client.EmberClientBuilder
 import prices.data._
+import cats.effect.unsafe.IORuntime
+import prices.data.builder.InstancesRequestBuilder
+import prices.routes.protocol.InstancesResponse
 
 object SmartcloudInstanceKindService {
 
@@ -14,20 +16,30 @@ object SmartcloudInstanceKindService {
       token: String
   )
 
+  private final val client = EmberClientBuilder
+    .default[IO]
+    .build
+
+  implicit val runtime: IORuntime = IORuntime.global
+
   def make[F[_]: Concurrent](config: Config): InstanceKindService[F] = new SmartcloudInstanceKindService(config)
 
   private final class SmartcloudInstanceKindService[F[_]: Concurrent](
       config: Config
   ) extends InstanceKindService[F] {
 
-    implicit val instanceKindsEntityDecoder: EntityDecoder[F, List[String]] = jsonOf[F, List[String]]
-
-    val getAllUri = s"${config.baseUri}/instances"
-
     override def getAll(): F[List[InstanceKind]] =
-      List("sc2-micro", "sc2-small", "sc2-medium") // Dummy data. Your implementation should call the smartcloud API.
-        .map(InstanceKind(_))
-        .pure[F]
+        client
+          .use { client =>
+            client.expect[String](InstancesRequestBuilder.build(config))
+          }
+          .map(body => decode[List[String]](body) match {
+            case Right(v) => v
+            case Left(error) => throw new RuntimeException(error)
+          })
+          .map(kinds => kinds.map(kind => InstanceKind(kind)))
+          .unsafeRunSync()
+          .pure[F]
 
     override def get(kind: InstanceKind): F[InstancePrice] = ???
   }
